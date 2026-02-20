@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Endurance Telemetry // Baseline</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --text: #e0e0e0;
+            --dim: #444;
+            --accent: #fff;
+            --imdb: #f3ce13;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', Courier, monospace;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        header {
+            border-bottom: 1px solid var(--dim);
+            padding-bottom: 15px;
+            margin-bottom: 80px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 100px;
+            flex-grow: 1;
+        }
+
+        .label {
+            color: var(--dim);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .big-data {
+            font-size: 3.5rem;
+            margin-bottom: 5px;
+            letter-spacing: -1px;
+        }
+
+        .sub-data {
+            font-size: 0.95rem;
+            color: var(--dim);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .miller-section {
+            border-left: 1px solid #1a1a1a;
+            padding-left: 60px;
+        }
+
+        #tick { 
+            font-size: 1.4rem; 
+            margin-top: 10px; 
+            color: #777; 
+        }
+
+        footer {
+            margin-top: auto;
+            border-top: 1px solid var(--dim);
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+        }
+
+        .footer-ops {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .footer-link {
+            color: var(--text);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.2s;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+            font-size: 0.7rem;
+        }
+
+        .footer-link:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        .imdb-style {
+            color: var(--imdb);
+        }
+
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; gap: 40px; }
+            .miller-section { border-left: none; padding-left: 0; }
+            footer { flex-direction: column; gap: 20px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <span>SYSTEM: ENDURANCE_OS // RELATIVITY: ON</span>
+    <span id="utc">00:00:00 UTC</span>
+</header>
+
+<div class="main-grid">
+    <div>
+        <span class="label">Earth Baseline Progression</span>
+        <div class="big-data" id="earthMain">--</div>
+        <div class="sub-data" id="earthDetail">--</div>
+    </div>
+
+    <div class="miller-section">
+        <span class="label">Miller Surface Time</span>
+        <div class="big-data" id="millerMain">--</div>
+        <div class="sub-data">Dilation: 1H Miller = 7Y Earth</div>
+        
+        <div style="margin-top: 60px;">
+            <span class="label">Next Signal Pulse</span>
+            <div id="tick">T-MINUS: --</div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-ops">
+        <button class="footer-link" onclick="shareToX()">[ Share to X ]</button>
+        <a href="https://www.imdb.com/title/tt0816692/" target="_blank" class="footer-link imdb-style">[ View IMDb Records ]</a>
+    </div>
+    <div style="color: var(--dim); text-transform: uppercase; letter-spacing: 1px;">
+        Epoch: 2014.11.07 // Status: Nominal
+    </div>
+</footer>
+
+<script>
+    const start = new Date(Date.UTC(2014, 10, 7));
+    const ratio = 7.0;
+
+    function update() {
+        const now = new Date();
+        const diff = now - start;
+        const totalSec = Math.floor(diff / 1000);
+
+        // Earth Calculation
+        const y = Math.floor(totalSec / (3600 * 24 * 365.25));
+        const d = Math.floor((totalSec % (3600 * 24 * 365.25)) / (3600 * 24));
+        const h = Math.floor((totalSec % (3600 * 24)) / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+        const ms = diff % 1000;
+
+        document.getElementById('earthMain').innerText = `${y}Y ${d}D`;
+        document.getElementById('earthDetail').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${ms.toString().padStart(3,'0')}`;
+
+        // Miller Calculation
+        const earthYears = diff / (1000 * 3600 * 24 * 365.25);
+        const mTotalHours = earthYears / ratio;
+        const mh = Math.floor(mTotalHours);
+        const mm = Math.floor((mTotalHours % 1) * 60);
+        const ms_val = Math.floor(((mTotalHours * 60) % 1) * 60);
+        
+        document.getElementById('millerMain').innerText = `${mh}H ${mm}M ${ms_val}S`;
+
+        // Tick Calculation
+        const rem = 1 - ((mTotalHours * 3600) % 1);
+        document.getElementById('tick').innerText = `T-MINUS: ${Math.ceil(rem * 60)}s`;
+
+        // Footer UTC Clock
+        document.getElementById('utc').innerText = now.toISOString().split('T')[1].replace('Z','');
+    }
+
+    function shareToX() {
+    const earth = document.getElementById('earthMain').innerText;
+    const miller = document.getElementById('millerMain').innerText;
+    const url = "endurance-telemetry.github.io"; 
+    
+    const tweetText = encodeURIComponent(
+        `[ENDURANCE LOG]\n` +
+        `Miller's Planet: ${miller} passed.\n` +
+        `Earth Baseline: ${earth} elapsed.\n\n` +
+        `Track: ${url}\n` +
+        `#Interstellar #Gargantua #Relativity`
+    );
+    
+    window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank');
+}
+
+    setInterval(update, 50);
+    update();
+</script>
+</body>
+</html>
